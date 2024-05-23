@@ -10,8 +10,8 @@ import { toast } from 'react-toastify';
 
 function ContactWithCaptcha() {
   const [input, setInput] = useState({
-    name: '',
-    email: '',
+    from_name: '',
+    email_id: '',
     message: '',
   });
   const [captcha, setCaptcha] = useState(null);
@@ -21,7 +21,7 @@ function ContactWithCaptcha() {
   });
 
   const checkRequired = () => {
-    if (input.email && input.message && input.name) {
+    if (input.email_id && input.message && input.from_name) {
       setError({ ...error, required: false });
     }
   };
@@ -30,20 +30,11 @@ function ContactWithCaptcha() {
     if (!captcha) {
       toast.error('Please complete the captcha!');
       return;
-    } else {
-      const res = await axios.post(`${process.env.NEXT_PUBLIC_APP_URL}/api/google`, {
-        token: captcha
-      });
-
-      setCaptcha(null);
-      if (!res.data.success) {
-        toast.error('Captcha verification failed!');
-        return;
-      };
-    };
+    } 
+    setCaptcha(null);
 
     e.preventDefault();
-    if (!input.email || !input.message || !input.name) {
+    if (!input.email_id || !input.message || !input.from_name) {
       setError({ ...error, required: true });
       return;
     } else if (error.email) {
@@ -55,6 +46,8 @@ function ContactWithCaptcha() {
     const serviceID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
     const templateID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
     const options = { publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY };
+    console.log("input from the form: ", input);
+    console.log("error from the form: ", error);
 
     try {
       const res = await emailjs.send(serviceID, templateID, input, options);
@@ -62,8 +55,8 @@ function ContactWithCaptcha() {
       if (res.status === 200) {
         toast.success('Message sent successfully!');
         setInput({
-          name: '',
-          email: '',
+          from_name: '',
+          email_id: '',
           message: '',
         });
       };
@@ -89,9 +82,9 @@ function ContactWithCaptcha() {
               type="text"
               maxLength="100"
               required={true}
-              onChange={(e) => setInput({ ...input, name: e.target.value })}
+              onChange={(e) => setInput({ ...input, from_name: e.target.value })}
               onBlur={checkRequired}
-              value={input.name}
+              value={input.from_name}
             />
           </div>
 
@@ -102,11 +95,11 @@ function ContactWithCaptcha() {
               type="email"
               maxLength="100"
               required={true}
-              value={input.email}
-              onChange={(e) => setInput({ ...input, email: e.target.value })}
+              value={input.email_id}
+              onChange={(e) => setInput({ ...input, email_id: e.target.value })}
               onBlur={() => {
                 checkRequired();
-                setError({ ...error, email: !isValidEmail(input.email) });
+                setError({ ...error, email: !isValidEmail(input.email_id) });
               }}
             />
             {error.email &&
@@ -130,6 +123,7 @@ function ContactWithCaptcha() {
           <ReCAPTCHA
             sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
             onChange={(code) => setCaptcha(code)}
+            theme='dark'
           />
           <div className="flex flex-col items-center gap-2">
             {error.required &&
